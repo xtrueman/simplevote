@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Голосование за выступающих</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 500px;
+            width: 100%;
+            padding: 40px 30px;
+            text-align: center;
+        }
+
+        .speaker-number {
+            font-size: 72px;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .speaker-label {
+            font-size: 18px;
+            color: #666;
+            margin-bottom: 40px;
+        }
+
+        .stars-container {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 40px;
+            min-height: 80px;
+            align-items: center;
+        }
+
+        .star {
+            font-size: 60px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            user-select: none;
+            color: #ddd;
+        }
+
+        .star:hover {
+            transform: scale(1.2);
+        }
+
+        .star.active {
+            color: #ffd700;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+        }
+
+        .star.flash {
+            animation: starFlash 0.6s ease;
+        }
+
+        @keyframes starFlash {
+            0% {
+                transform: scale(1);
+                filter: brightness(1);
+                text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+            }
+            50% {
+                transform: scale(1.3);
+                filter: brightness(2);
+                text-shadow: 0 0 30px rgba(255, 215, 0, 1), 0 0 50px rgba(255, 215, 0, 0.8);
+            }
+            100% {
+                transform: scale(1);
+                filter: brightness(1);
+                text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+            }
+        }
+
+        .buttons-container {
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+            margin-top: 40px;
+        }
+
+        button {
+            flex: 1;
+            padding: 18px 30px;
+            font-size: 16px;
+            font-weight: 600;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .vote-again-btn {
+            background: #e0e0e0;
+            color: #333;
+        }
+
+        .vote-again-btn:hover:not(:disabled) {
+            background: #d0d0d0;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .vote-again-btn:disabled {
+            background: #f0f0f0;
+            color: #bbb;
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        .next-btn {
+            background: #667eea;
+            color: white;
+        }
+
+        .next-btn:hover:not(:disabled) {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .next-btn:disabled {
+            background: #ccc;
+            color: #888;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .voter-number {
+            text-align: center;
+            color: #999;
+            font-size: 14px;
+            margin-top: 20px;
+            font-weight: 400;
+        }
+
+
+
+        /* Мобильная оптимизация */
+        @media (max-width: 480px) {
+            .container {
+                padding: 30px 20px;
+            }
+
+            .speaker-number {
+                font-size: 64px;
+            }
+
+            .star {
+                font-size: 50px;
+            }
+
+            .stars-container {
+                gap: 10px;
+            }
+
+            button {
+                padding: 16px 20px;
+                font-size: 15px;
+            }
+
+            .voter-number {
+                font-size: 12px;
+                margin-top: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="speaker-number" id="speakerNumber">1</div>
+        <div class="speaker-label">Выступающий №</div>
+
+        <div class="stars-container" id="starsContainer">
+            <span class="star" data-rating="1">★</span>
+            <span class="star" data-rating="2">★</span>
+            <span class="star" data-rating="3">★</span>
+            <span class="star" data-rating="4">★</span>
+            <span class="star" data-rating="5">★</span>
+        </div>
+
+        <div class="buttons-container">
+            <button class="vote-again-btn" id="voteAgainBtn">Голосовать ещё</button>
+            <button class="next-btn" id="nextBtn">Далее</button>
+        </div>
+
+        <div class="voter-number" id="voterNumber">Голосующий №1</div>
+    </div>
+
+    <script>
+        // Переменные состояния
+        let currentSpeaker = 1;
+        let selectedRating = 0;
+        let voterCount = 1;
+
+        // Элементы DOM
+        const speakerNumberEl = document.getElementById('speakerNumber');
+        const starsContainer = document.getElementById('starsContainer');
+        const stars = document.querySelectorAll('.star');
+        const voteAgainBtn = document.getElementById('voteAgainBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const voterNumberEl = document.getElementById('voterNumber');
+
+        // Обработчик клика на звезду
+        stars.forEach(star => {
+            star.addEventListener('click', function() {
+                const rating = parseInt(this.dataset.rating);
+                selectedRating = rating;
+                
+                // Обновляем визуальное отображение звёзд
+                updateStars(rating);
+                
+                // Добавляем эффект вспышки
+                flashStars(rating);
+                
+                // Разблокируем кнопки "Далее" и "Голосовать ещё"
+                nextBtn.disabled = false;
+                voteAgainBtn.disabled = false;
+            });
+
+            // Эффект при наведении
+            star.addEventListener('mouseenter', function() {
+                const rating = parseInt(this.dataset.rating);
+                highlightStars(rating);
+            });
+        });
+
+        // Возвращаем звезды к выбранному состоянию при уходе курсора
+        starsContainer.addEventListener('mouseleave', function() {
+            updateStars(selectedRating);
+        });
+
+        // Функция для подсветки звёзд при наведении
+        function highlightStars(rating) {
+            stars.forEach((star, index) => {
+                if (index < rating) {
+                    star.classList.add('active');
+                } else {
+                    star.classList.remove('active');
+                }
+            });
+        }
+
+        // Функция для обновления звёзд после выбора
+        function updateStars(rating) {
+            stars.forEach((star, index) => {
+                if (index < rating) {
+                    star.classList.add('active');
+                } else {
+                    star.classList.remove('active');
+                }
+            });
+        }
+
+        // Эффект вспышки звёзд
+        function flashStars(rating) {
+            stars.forEach((star, index) => {
+                if (index < rating) {
+                    star.classList.add('flash');
+                    setTimeout(() => {
+                        star.classList.remove('flash');
+                    }, 600);
+                }
+            });
+        }
+
+        // Кнопка "Голосовать ещё"
+        voteAgainBtn.addEventListener('click', function() {
+            selectedRating = 0;
+            updateStars(0);
+            voterCount++;
+            voterNumberEl.textContent = `Голосующий №${voterCount}`;
+            // Блокируем кнопки до нового голосования
+            nextBtn.disabled = true;
+            voteAgainBtn.disabled = true;
+        });
+
+        // Кнопка "Далее"
+        nextBtn.addEventListener('click', function() {
+            currentSpeaker++;
+            speakerNumberEl.textContent = currentSpeaker;
+            selectedRating = 0;
+            updateStars(0);
+            voterCount = 1;
+            voterNumberEl.textContent = 'Голосующий №1';
+            // Блокируем кнопку "Далее" для нового выступающего
+            nextBtn.disabled = true;
+        });
+
+        // Изначально блокируем обе кнопки
+        nextBtn.disabled = true;
+        voteAgainBtn.disabled = true;
+
+
+    </script>
+</body>
+</html>
