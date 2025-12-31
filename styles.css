@@ -1,0 +1,302 @@
+/* Сброс стилей */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+.container {
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    max-width: 500px;
+    width: 100%;
+    padding: 40px 30px;
+    text-align: center;
+}
+
+.speaker-number {
+    font-size: 72px;
+    font-weight: bold;
+    color: #667eea;
+    margin-bottom: 10px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.speaker-label {
+    font-size: 18px;
+    color: #666;
+    margin-bottom: 40px;
+}
+
+.stars-container {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 40px;
+    min-height: 80px;
+    align-items: center;
+}
+
+.star {
+    font-size: 60px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    user-select: none;
+    color: #ddd;
+}
+
+.star:hover {
+    transform: scale(1.2);
+}
+
+.star.active {
+    color: #ffd700;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+}
+
+.star.flash {
+    animation: starFlash 0.6s ease;
+}
+
+@keyframes starFlash {
+    0% {
+        transform: scale(1);
+        filter: brightness(1);
+        text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+    }
+    50% {
+        transform: scale(1.3);
+        filter: brightness(2);
+        text-shadow: 0 0 30px rgba(255, 215, 0, 1), 0 0 50px rgba(255, 215, 0, 0.8);
+    }
+    100% {
+        transform: scale(1);
+        filter: brightness(1);
+        text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+    }
+}
+
+.buttons-container {
+    display: flex;
+    justify-content: space-between;
+    gap: 15px;
+    margin-top: 40px;
+}
+
+button {
+    flex: 1;
+    padding: 18px 30px;
+    font-size: 16px;
+    font-weight: 600;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.vote-again-btn {
+    background: #e0e0e0;
+    color: #333;
+}
+
+.vote-again-btn:hover:not(:disabled) {
+    background: #d0d0d0;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+.vote-again-btn:disabled {
+    background: #f0f0f0;
+    color: #bbb;
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+.next-btn {
+    background: #667eea;
+    color: white;
+}
+
+.next-btn:hover:not(:disabled) {
+    background: #5568d3;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+.next-btn:disabled {
+    background: #ccc;
+    color: #888;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+button:active {
+    transform: translateY(0);
+}
+
+.voter-number {
+    text-align: center;
+    color: #999;
+    font-size: 14px;
+    margin-top: 20px;
+    font-weight: 400;
+}
+
+.description {
+    font-size: 16px;
+    color: #555;
+    margin-bottom: 30px;
+    font-weight: 500;
+}
+
+/* Заглушки и сообщения */
+.placeholder {
+    font-size: 20px;
+    color: #667eea;
+    padding: 60px 20px;
+    text-align: center;
+    line-height: 1.6;
+}
+
+.placeholder-title {
+    font-size: 28px;
+    font-weight: bold;
+    margin-bottom: 15px;
+}
+
+.error-message {
+    background: #ffebee;
+    color: #c62828;
+    padding: 15px;
+    border-radius: 8px;
+    margin-top: 20px;
+    font-size: 14px;
+}
+
+/* Результаты голосования */
+.results-container {
+    text-align: left;
+}
+
+.results-title {
+    font-size: 28px;
+    font-weight: bold;
+    color: #667eea;
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+.result-item {
+    background: #f5f5f5;
+    padding: 20px;
+    margin-bottom: 15px;
+    border-radius: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: transform 0.2s ease;
+}
+
+.result-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.result-rank {
+    font-size: 24px;
+    font-weight: bold;
+    color: #667eea;
+    margin-right: 15px;
+}
+
+.result-info {
+    flex: 1;
+}
+
+.result-description {
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 5px;
+}
+
+.result-personnum {
+    font-size: 12px;
+    color: #999;
+}
+
+.result-rating {
+    font-size: 28px;
+    font-weight: bold;
+    color: #ffd700;
+}
+
+.hidden {
+    display: none;
+}
+
+/* Мобильная оптимизация */
+@media (max-width: 480px) {
+    .container {
+        padding: 30px 20px;
+    }
+
+    .speaker-number {
+        font-size: 64px;
+    }
+
+    .star {
+        font-size: 50px;
+    }
+
+    .stars-container {
+        gap: 10px;
+    }
+
+    button {
+        padding: 16px 20px;
+        font-size: 15px;
+    }
+
+    .voter-number {
+        font-size: 12px;
+        margin-top: 15px;
+    }
+
+    .placeholder {
+        font-size: 18px;
+        padding: 40px 15px;
+    }
+
+    .placeholder-title {
+        font-size: 24px;
+    }
+
+    .results-title {
+        font-size: 24px;
+    }
+
+    .result-item {
+        padding: 15px;
+    }
+
+    .result-rank {
+        font-size: 20px;
+    }
+
+    .result-rating {
+        font-size: 24px;
+    }
+}

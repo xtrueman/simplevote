@@ -1,0 +1,32 @@
+[Unit]
+Description=SimpleVote FastAPI Service
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+WorkingDirectory=/srv/simplevote
+Environment="PATH=/srv/simplevote"
+
+# Запуск uvicorn с FastAPI приложением
+ExecStart=/home/trueman/.local/bin/uvicorn app:app --host 127.0.0.1 --port 8000 --workers 1
+
+# Автоматический рестарт при падении
+Restart=always
+RestartSec=5
+
+# Логирование
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=simplevote
+
+# Безопасность
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/srv/simplevote
+
+[Install]
+WantedBy=multi-user.target

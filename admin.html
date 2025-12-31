@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SimpleVote - Админ-панель</title>
+    <link rel="stylesheet" href="admin.css">
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+</head>
+<body>
+<div class="container">
+    <h1>🎯 Админ-панель</h1>
+    <p class="subtitle">Управление голосованием SimpleVote</p>
+
+    <!-- Текущий статус -->
+    <div class="status-section">
+        <div class="status-label">Текущий статус</div>
+        <div class="status-value" id="statusText">Загрузка...</div>
+        <div id="currentInfo"></div>
+    </div>
+
+    <!-- Форма запуска голосования -->
+    <div class="form-group">
+        <label for="participantName">Имя / описание участника</label>
+        <input 
+            type="text" 
+            id="participantName" 
+            placeholder="Например: Иван Иванов"
+        >
+    </div>
+
+    <button class="btn-start" id="btnStart">
+        ▶️ Начать голосование за участника
+    </button>
+
+    <button class="btn-finish" id="btnFinish">
+        ⏹️ Завершить голосование
+    </button>
+
+    <button class="btn-results" id="btnRestart">
+        🔄 Начать заново
+    </button>
+
+    <!-- Сообщения -->
+    <div id="messageArea"></div>
+
+    <!-- Результаты -->
+    <div id="resultsArea" class="hidden"></div>
+</div>
+
+<script>
+    $(() => {
+        // Конфигурация API
+        const API_BASE_URL = window.location.origin + '/api'; // Используем префикс /api/
+
+        // Элементы DOM (jQuery)
+        const $statusText = $('#statusText');
+        const $currentInfo = $('#currentInfo');
+        const $statusSection = $('.status-section');
+        const $formGroup = $('.form-group');
+        const $btnStart = $('#btnStart');
+        const $btnFinish = $('#btnFinish');
+        const $btnRestart = $('#btnRestart');
+        const $messageArea = $('#messageArea');
+        const $resultsArea = $('#resultsArea');
+        const $participantName = $('#participantName');
+
+        // ============ API функции ============
+
+        // Получить статус
+        async function fetchStatus() {
+            try {
+                const data = await $.get(`${API_BASE_URL}/status`);
+                updateStatusDisplay(data);
+            } catch (error) {
+                showMessage('Ошибка соединения с сервером', 'error');
+            }
+        }
+
+        // Обновить отображение статуса
+        function updateStatusDisplay(data) {
+            if (data.status === 'VOTING_NOT_STARTED') {
+                $statusText.html('Голосование не начато <span class="status-badge waiting">Ожидание</span>');
+                $currentInfo.html('');
+                
+                // Показываем элементы управления
+                $statusSection.show();
+                $formGroup.show();
+                $btnStart.show();
+                $btnFinish.show();
+                $btnRestart.show();
+                $resultsArea.addClass('hidden');
+            } 
+            else if (data.status === 'VOTING') {
+                $statusText.html('Идёт голосование <span class="status-badge voting">Активно</span>');
+                $currentInfo.html(`
+                    <div style="margin-top: 10px;">
+                        <div style="font-size: 14px; color: #666;">Участник №${data.personnum}</div>
+                        <div style="font-size: 16px; font-weight: 600; color: #333;">${data.description}</div>
+                    </div>
+                `);
+                
+                // Показываем элементы управления
+                $statusSection.show();
+                $formGroup.show();
+                $btnStart.show();
+                $btnFinish.show();
+                $btnRestart.show();
+                $resultsArea.addClass('hidden');
+            }
+            else if (data.status === 'VOTING_FINISHED') {
+                // Скрываем все элементы управления, кроме "Начать заново"
+                $statusSection.hide();
+                $formGroup.hide();
+                $btnStart.hide();
+                $btnFinish.hide();
+                $btnRestart.show(); // Оставляем кнопку сброса видимой
+                $messageArea.html('');
+                
+                // Автоматически показываем результаты
+                showResults();
+            }
+        }
+
+        // Начать голосование за участника
+        async function startVoting() {
+            const name = $participantName.val().trim();
+            
+            if (!name) {
+                showMessage('Введите имя/описание участника', 'error');
+                return;
+            }
+
+            try {
+                const data = await $.post(
+                    `${API_BASE_URL}/setcurrentperson?description=${encodeURIComponent(name)}`
+                );
+                
+                if (data.success) {
+                    showMessage(`✅ Голосование открыто для: ${name}`, 'success');
+                    $participantName.val('');
+                    fetchStatus();
+                }
+            } catch (error) {
+                showMessage('Ошибка при запуске голосования', 'error');
+            }
+        }
+
+        // Завершить голосование
+        async function finishVoting() {
+            if (!confirm('Вы уверены, что хотите завершить голосование?')) {
+                return;
+            }
+
+            try {
+                const data = await $.post(
+                    `${API_BASE_URL}/setcurrentperson?description=VOTING_FINISHED`
+                );
+                
+                if (data.success) {
+                    // Обновляем статус, который автоматически покажет результаты
+                    fetchStatus();
+                }
+            } catch (error) {
+                showMessage('Ошибка при завершении голосования', 'error');
+            }
+        }
+
+        // Начать заново
+        async function restartVoting() {
+            if (!confirm('Вы уверены, что хотите сбросить всё голосование? Все результаты будут удалены!')) {
+                return;
+            }
+
+            try {
+                const data = await $.post(
+                    `${API_BASE_URL}/setcurrentperson?description=VOTING_RESTART`
+                );
+                
+                if (data.success) {
+                    showMessage('✅ Голосование сброшено. Можно начинать заново!', 'success');
+                    fetchStatus();
+                }
+            } catch (error) {
+                showMessage('Ошибка при сбросе голосования', 'error');
+            }
+        }
+
+        // Показать результаты
+        async function showResults() {
+            try {
+                const results = await $.get(`${API_BASE_URL}/getresults`);
+                $resultsArea.removeClass('hidden');
+                
+                if (results.length === 0) {
+                    $resultsArea.html('<div class="message">Нет результатов</div>');
+                } else {
+                    let html = '<h2 style="color: #667eea; margin: 30px 0 20px;">🏆 Результаты</h2><div class="results-list">';
+                    
+                    results.forEach((result, index) => {
+                        html += `
+                            <div class="result-item">
+                                <div class="result-rank">${index + 1}</div>
+                                <div class="result-info">
+                                    <div class="result-description">${result.description}</div>
+                                    <div class="result-personnum">Участник №${result.personnum}</div>
+                                </div>
+                                <div class="result-rating">⭐ ${result.rating}</div>
+                            </div>
+                        `;
+                    });
+                    
+                    html += '</div>';
+                    $resultsArea.html(html);
+                }
+            } catch (error) {
+                showMessage('Ошибка при получении результатов', 'error');
+            }
+        }
+
+        // Показать сообщение
+        function showMessage(text, type) {
+            $messageArea.html(`<div class="message ${type}">${text}</div>`);
+            setTimeout(() => $messageArea.html(''), 5000);
+        }
+
+        // ============ Обработчики событий ============
+
+        // Кнопка "Начать голосование"
+        $btnStart.on('click', startVoting);
+
+        // Кнопка "Завершить голосование"
+        $btnFinish.on('click', finishVoting);
+
+        // Кнопка "Начать заново"
+        $btnRestart.on('click', restartVoting);
+
+        // Обработка Enter в поле ввода
+        $participantName.on('keypress', (e) => {
+            if (e.key === 'Enter') startVoting();
+        });
+
+        // ============ Инициализация ============
+
+        // Автообновление статуса каждые 2 секунды
+        setInterval(fetchStatus, 2000);
+
+        // Загрузка при старте
+        fetchStatus();
+    });
+</script>
+</body>
+</html>
