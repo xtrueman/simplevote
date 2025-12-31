@@ -7,6 +7,33 @@
 - Nginx
 - Права sudo
 
+---
+
+## Быстрое развертывание одной командой
+
+Для опытных пользователей (после копирования файлов в /srv/simplevote):
+
+```bash
+sudo apt update && \
+sudo apt install -y python3 python3-pip nginx && \
+sudo pip3 install fastapi uvicorn[standard] pydantic && \
+cd /srv/simplevote && \
+sudo chown -R www-data:www-data /srv/simplevote && \
+sudo chmod -R 755 /srv/simplevote && \
+sudo cp simplevote.service /etc/systemd/system/ && \
+sudo cp simplevote.conf /etc/nginx/sites-available/ && \
+sudo ln -s /etc/nginx/sites-available/simplevote.conf /etc/nginx/sites-enabled/ && \
+sudo systemctl daemon-reload && \
+sudo systemctl start simplevote && \
+sudo systemctl enable simplevote && \
+sudo nginx -t && \
+sudo systemctl restart nginx
+```
+
+---
+
+## Пошаговая инструкция
+
 ## Шаг 1: Подготовка сервера
 
 ```bash
@@ -14,7 +41,10 @@
 sudo apt update && sudo apt upgrade -y
 
 # Установка необходимых пакетов
-sudo apt install -y python3 python3-pip python3-venv nginx
+sudo apt install -y python3 python3-pip nginx
+
+# Установка Python-пакетов системно
+sudo pip3 install fastapi uvicorn[standard] pydantic
 ```
 
 ## Шаг 2: Развертывание приложения
@@ -22,18 +52,18 @@ sudo apt install -y python3 python3-pip python3-venv nginx
 ```bash
 # Создание директории
 sudo mkdir -p /srv/simplevote
-sudo chown $USER:$USER /srv/simplevote
+sudo chown www-data:www-data /srv/simplevote
 
 # Клонирование/копирование файлов проекта
 cd /srv/simplevote
 # Скопируйте все файлы проекта в /srv/simplevote
 
-# Создание виртуального окружения
-python3 -m venv venv
-source venv/bin/activate
+# Установка зависимостей (если не установлены глобально)
+sudo pip3 install -r requirements.txt
 
-# Установка зависимостей
-pip install -r requirements.txt
+# Установка правильных прав доступа
+sudo chown -R www-data:www-data /srv/simplevote
+sudo chmod -R 755 /srv/simplevote
 ```
 
 ## Шаг 3: Настройка systemd сервиса
@@ -123,13 +153,10 @@ sudo systemctl status simplevote
 # Переход в директорию проекта
 cd /srv/simplevote
 
-# Активация виртуального окружения
-source venv/bin/activate
-
 # Обновление кода (git pull или копирование новых файлов)
 
 # Обновление зависимостей (если изменились)
-pip install -r requirements.txt
+sudo pip3 install -r requirements.txt
 
 # Перезапуск сервиса
 sudo systemctl restart simplevote
