@@ -4,8 +4,8 @@ After=network.target
 
 [Service]
 Type=simple
-User=www-data
-Group=www-data
+User=trueman
+Group=trueman
 WorkingDirectory=/srv/simplevote
 
 # Запуск uvicorn с FastAPI приложением
