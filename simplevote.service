@@ -9,6 +9,7 @@ Group=trueman
 WorkingDirectory=/srv/simplevote
 
 # Запуск uvicorn с FastAPI приложением
+Environment="PATH=/home/trueman/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 ExecStart=/home/trueman/.local/bin/uvicorn app:app --host 127.0.0.1 --port 8001 --workers 1
 
 # Автоматический рестарт при падении
