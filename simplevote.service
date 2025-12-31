@@ -25,7 +25,6 @@ SyslogIdentifier=simplevote
 NoNewPrivileges=true
 PrivateTmp=true
 ProtectSystem=strict
-ProtectHome=true
 ReadWritePaths=/srv/simplevote
 
 [Install]
